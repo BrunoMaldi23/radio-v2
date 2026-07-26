@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { GlobalAudioPlayer } from '@/components/global-audio-player';
@@ -12,6 +13,14 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
   const isTv = pathname === '/tv';
+
+  useEffect(() => {
+    if (!isTv) {
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [isTv]);
 
   return (
     <>

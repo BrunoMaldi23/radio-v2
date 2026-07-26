@@ -67,7 +67,13 @@ function NavItem({ href, label, icon: Icon, active, onClick }: NavItemType & { a
       aria-current={active ? 'page' : undefined}
       className={classNames('hit-nav-link', active && 'is-active')}
       href={href}
-      onClick={onClick}
+      onClick={() => {
+        if (href === '/tv') {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        }
+        onClick?.();
+      }}
+      scroll
     >
       <Icon className="h-5 w-5" aria-hidden="true" />
       <span>{label}</span>
@@ -77,7 +83,7 @@ function NavItem({ href, label, icon: Icon, active, onClick }: NavItemType & { a
 
 function CTAButton() {
   return (
-    <Link className="hit-live-cta" href="/tv">
+    <Link className="hit-live-cta" href="/tv" onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })} scroll>
       <PlayCircle className="h-4 w-4" aria-hidden="true" />
       <span>En vivo</span>
     </Link>

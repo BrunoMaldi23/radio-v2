@@ -169,6 +169,9 @@ export function GlobalAudioPlayer() {
       setVideoMode('FULLSCREEN');
       if (pathname !== '/tv') {
         router.push('/tv');
+        window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       }
       return;
     }
