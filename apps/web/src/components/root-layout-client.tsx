@@ -33,7 +33,7 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
         {!isAdmin && (
           isTv ? (
             <div className="tv-page-shell mx-auto">
-              <div className="tv-live-stage grid gap-3 md:grid-cols-[minmax(0,1fr)_clamp(300px,24vw,360px)] md:items-stretch">
+              <div className="tv-live-stage grid gap-3 md:grid-cols-[minmax(0,1fr)_clamp(260px,22vw,300px)] md:items-stretch">
                 <GlobalVideoPlayer />
                 <TvLiveChat />
               </div>
