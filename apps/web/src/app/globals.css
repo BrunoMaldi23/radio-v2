@@ -1858,7 +1858,7 @@ button, input, select, textarea { font: inherit; }
 }
 .tv-page-shell {
   display: grid;
-  width: min(calc(100vw - 3.75rem), 1240px);
+  width: min(calc(100vw - 2rem), 1440px);
   gap: 0.75rem;
   justify-items: center;
 }
@@ -2092,9 +2092,12 @@ button, input, select, textarea { font: inherit; }
 .tv-chat-panel {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-self: stretch;
   height: 100%;
   min-height: 428px;
-  max-height: 428px;
+  max-height: none;
   overflow: hidden;
   border: 1px solid rgba(15,23,42,0.1);
   border-radius: 8px;
