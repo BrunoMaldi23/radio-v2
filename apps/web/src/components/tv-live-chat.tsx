@@ -154,12 +154,27 @@ export function TvLiveChat() {
       setStatus('live');
     });
 
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshMessages();
+      }
+    };
+
+    const refreshWhenFocused = () => {
+      void refreshMessages();
+    };
+
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    window.addEventListener('focus', refreshWhenFocused);
+
     const refreshTimer = window.setInterval(() => {
       void refreshMessages();
     }, 3500);
 
     return () => {
       window.clearInterval(refreshTimer);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+      window.removeEventListener('focus', refreshWhenFocused);
       socket.disconnect();
     };
   }, [refreshMessages]);

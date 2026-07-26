@@ -25,11 +25,11 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <>
       {!isAdmin && <SiteNavbar />}
-      <main className={`min-h-screen ${
+      <main className={
         isAdmin
           ? 'p-0'
-          : `public-shell pb-28 ${isTv ? 'px-0 pt-3' : 'px-4 pt-8 sm:px-6 lg:px-8'}`
-      }`}>
+          : `public-shell ${isTv ? 'tv-page-screen px-0' : 'min-h-screen px-4 pt-8 pb-28 sm:px-6 lg:px-8'}`
+      }>
         {!isAdmin && (
           isTv ? (
             <div className="tv-page-shell mx-auto">
