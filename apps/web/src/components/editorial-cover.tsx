@@ -1,4 +1,4 @@
-import { Newspaper, Radio, Sparkles } from 'lucide-react';
+import { Newspaper, Sparkles } from 'lucide-react';
 
 type EditorialCoverProps = {
   category: string;
@@ -18,12 +18,6 @@ const categoryStyles: Record<string, { accent: string; glow: string; icon: typeo
     glow: 'bg-fuchsia-400/22',
     icon: Sparkles,
     label: 'Musica y memoria',
-  },
-  'Rankings semanal': {
-    accent: 'from-rose-300 via-amber-300 to-emerald-300',
-    glow: 'bg-rose-400/22',
-    icon: Radio,
-    label: 'Ranking de la semana',
   },
 };
 

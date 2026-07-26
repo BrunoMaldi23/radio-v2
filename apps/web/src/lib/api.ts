@@ -88,12 +88,22 @@ export type Article = {
   category: string;
   coverUrl: string | null;
   coverFocal?: string | null;
+  eventId?: number | null;
   likes?: number;
   attendees?: number;
+  commentsCount?: number;
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ArticleComment = {
+  id: number;
+  articleId: number;
+  body: string;
+  author: string | null;
+  createdAt: string;
 };
 
 export type Program = {
@@ -335,6 +345,9 @@ export const api = {
   articleBySlug(slug: string) {
     return request<Article>(`/articles/${encodeURIComponent(slug)}`);
   },
+  eventGallery(eventId: number) {
+    return request<Article[]>(`/articles/${eventId}/gallery`);
+  },
   attendArticle(id: number) {
     return request<Article>(`/articles/${id}/attend`, {
       method: 'POST',
@@ -345,6 +358,15 @@ export const api = {
     return request<Article>(`/articles/${id}/like`, {
       method: 'POST',
       body: JSON.stringify({})
+    });
+  },
+  articleComments(id: number) {
+    return request<ArticleComment[]>(`/articles/${id}/comments`);
+  },
+  createArticleComment(id: number, payload: { body: string; author?: string }) {
+    return request<ArticleComment>(`/articles/${id}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
     });
   },
   programsPublic() {
@@ -365,6 +387,7 @@ export const api = {
       body: string;
       category: string;
       coverUrl?: string;
+      eventId?: number | null;
       status?: 'DRAFT' | 'PUBLISHED';
     }
   ) {
@@ -377,10 +400,26 @@ export const api = {
     body: string;
     category: 'Eventos' | 'Galeria';
     coverUrl?: string;
+    eventId?: number | null;
   }) {
     return request<Article>('/articles/community-submissions', {
       method: 'POST',
       body: JSON.stringify(payload)
+    });
+  },
+  createEventGallerySubmission(
+    eventId: number,
+    payload: {
+      slug: string;
+      title: string;
+      excerpt: string;
+      body: string;
+      coverUrl?: string;
+    }
+  ) {
+    return request<Article>(`/articles/${eventId}/gallery-submissions`, {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, category: 'Galeria', eventId })
     });
   },
   updateArticle(token: string | undefined, id: number, payload: Partial<Article>) {

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ContentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { CreateArticleCommentDto } from './dto/create-article-comment.dto';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
@@ -39,6 +40,25 @@ export class ArticlesService {
     return this.prisma.article.findUnique({ where: { slug } });
   }
 
+  findEventGallery(eventId: number) {
+    return this.prisma.article.findMany({
+      where: {
+        eventId,
+        category: 'Galeria',
+        status: ContentStatus.PUBLISHED
+      },
+      include: {
+        _count: { select: { comments: true } }
+      },
+      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }]
+    }).then((items) =>
+      items.map(({ _count, ...item }) => ({
+        ...item,
+        commentsCount: _count.comments
+      }))
+    );
+  }
+
   attend(id: number) {
     return this.prisma.article.update({
       where: { id },
@@ -53,13 +73,41 @@ export class ArticlesService {
     });
   }
 
+  comments(articleId: number) {
+    return this.prisma.articleComment.findMany({
+      where: { articleId, article: { status: ContentStatus.PUBLISHED } },
+      orderBy: { createdAt: 'asc' },
+      take: 60
+    });
+  }
+
+  async createComment(articleId: number, dto: CreateArticleCommentDto) {
+    const article = await this.prisma.article.findFirst({
+      where: { id: articleId, status: ContentStatus.PUBLISHED },
+      select: { id: true }
+    });
+    if (!article) {
+      throw new BadRequestException('La imagen no existe o no esta disponible.');
+    }
+
+    return this.prisma.articleComment.create({
+      data: {
+        articleId,
+        body: dto.body.trim().slice(0, 420),
+        author: dto.author?.trim().slice(0, 80) || null
+      }
+    });
+  }
+
   async create(dto: CreateArticleDto) {
     const slug = await this.nextAvailableSlug(dto.slug || dto.title);
+    const eventId = await this.resolveEventId(dto.eventId, dto.category);
     const article = await this.prisma.article.create({
       data: {
         ...dto,
         body: sanitizeHtml(dto.body),
         slug,
+        eventId,
         publishedAt: dto.status === ContentStatus.PUBLISHED ? new Date() : undefined
       }
     });
@@ -74,6 +122,7 @@ export class ArticlesService {
   async createCommunitySubmission(dto: CreateArticleDto) {
     const category = ['Eventos', 'Galeria'].includes(dto.category) ? dto.category : 'Galeria';
     const slug = await this.nextAvailableSlug(dto.slug || dto.title);
+    const eventId = await this.resolveEventId(dto.eventId, category);
 
     return this.prisma.article.create({
       data: {
@@ -81,6 +130,24 @@ export class ArticlesService {
         body: sanitizeHtml(dto.body),
         category,
         slug,
+        eventId,
+        status: ContentStatus.DRAFT,
+        publishedAt: undefined
+      }
+    });
+  }
+
+  async createEventGallerySubmission(eventId: number, dto: CreateArticleDto) {
+    await this.ensurePublishedEvent(eventId);
+    const slug = await this.nextAvailableSlug(dto.slug || dto.title);
+
+    return this.prisma.article.create({
+      data: {
+        ...dto,
+        body: sanitizeHtml(dto.body || dto.excerpt),
+        category: 'Galeria',
+        slug,
+        eventId,
         status: ContentStatus.DRAFT,
         publishedAt: undefined
       }
@@ -88,14 +155,16 @@ export class ArticlesService {
   }
 
   async update(id: number, dto: UpdateArticleDto) {
-    const current = await this.prisma.article.findUnique({ where: { id }, select: { status: true } });
+    const current = await this.prisma.article.findUnique({ where: { id }, select: { status: true, category: true } });
     const shouldSetPublishedAt = dto.status === ContentStatus.PUBLISHED && current?.status !== ContentStatus.PUBLISHED;
+    const eventId = await this.resolveEventId(dto.eventId, dto.category ?? current?.category);
 
     const article = await this.prisma.article.update({
       where: { id },
       data: {
         ...dto,
         body: dto.body ? sanitizeHtml(dto.body) : undefined,
+        eventId,
         publishedAt: shouldSetPublishedAt ? new Date() : undefined
       }
     });
@@ -133,5 +202,28 @@ export class ArticlesService {
       .replace(/^-|-$/g, '');
 
     return slug || `contenido-${Date.now()}`;
+  }
+
+  private async resolveEventId(eventId: number | null | undefined, category?: string) {
+    if (category !== 'Galeria') return null;
+    if (eventId === null) return null;
+    if (eventId === undefined) return undefined;
+    await this.ensurePublishedEvent(eventId, false);
+    return eventId;
+  }
+
+  private async ensurePublishedEvent(eventId: number, requirePublished = true) {
+    const event = await this.prisma.article.findFirst({
+      where: {
+        id: eventId,
+        category: 'Eventos',
+        ...(requirePublished ? { status: ContentStatus.PUBLISHED } : {})
+      },
+      select: { id: true }
+    });
+    if (!event) {
+      throw new BadRequestException('El evento asociado no existe o no esta disponible.');
+    }
+    return event;
   }
 }

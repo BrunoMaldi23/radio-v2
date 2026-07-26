@@ -31,7 +31,7 @@ const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, description: 'Resumen operativo' },
   { href: '/admin/contenido?category=Noticias', label: 'Noticias', icon: Newspaper, description: 'Noticias y editoriales', category: 'Noticias' },
   { href: '/admin/contenido?category=Exitos%2090%2C2000', label: 'Exitos', icon: FileText, description: 'Exitos 90 y 2000', category: 'Exitos 90,2000' },
-  { href: '/admin/contenido?category=Rankings%20semanal', label: 'Rankings', icon: ListMusic, description: 'Rankings editoriales', category: 'Rankings semanal' },
+  { href: '/admin/ranking', label: 'Ranking live', icon: ListMusic, description: 'Canciones y votos' },
   { href: '/admin/comunidad', label: 'Comunidad', icon: MapPin, description: 'Eventos y galeria' },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users, description: 'Roles y accesos' },
   { href: '/admin/transmision', label: 'Transmision', icon: Radio, description: 'Radio, TV y senales' },
@@ -114,12 +114,12 @@ const AdminSidebar = memo(function AdminSidebar({ onNavigate }: { onNavigate?: (
   return (
     <aside className="flex h-full flex-col overflow-hidden bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px),radial-gradient(ellipse_at_16%_0%,rgba(245,158,11,0.20),transparent_50%),radial-gradient(ellipse_at_92%_80%,rgba(20,184,166,0.10),transparent_50%),linear-gradient(180deg,#020617_0%,#0f172a_50%,#020617_100%)] bg-[size:32px_32px,32px_32px,auto,auto,auto]">
       <div className="border-b border-white/[0.07] px-5 py-4">
-        <span className="grid h-12 w-full max-w-[164px] shrink-0 place-items-center rounded-lg bg-white/95 px-3 shadow-lg shadow-black/30 ring-1 ring-amber-300/25">
+        <span className="grid h-16 w-full max-w-[164px] shrink-0 place-items-center overflow-hidden rounded-lg bg-black px-3 shadow-lg shadow-black/30 ring-1 ring-cyan-300/20">
           <Image
-            alt="Radio Labranza FM+"
-            className="h-8 w-auto object-contain"
-            height={32}
-            src="/logo-radio.png"
+            alt="Radio Hit 90 y 2000"
+            className="h-14 w-auto object-contain"
+            height={80}
+            src="/logo-home.jpeg"
             width={120}
           />
         </span>
@@ -260,8 +260,8 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#020617] p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_10%,rgba(20,184,166,0.16),transparent_50%),radial-gradient(ellipse_at_90%_90%,rgba(245,158,11,0.12),transparent_50%)]" />
           <div className="relative z-10">
-            <span className="inline-grid h-24 w-52 place-items-center rounded-2xl bg-white/95 px-5 shadow-2xl shadow-black/40 ring-1 ring-amber-300/30">
-              <Image alt="Radio Labranza FM+" className="h-auto w-40 object-contain" height={70} priority src="/logo-radio.png" width={230} />
+            <span className="inline-grid h-40 w-52 place-items-center overflow-hidden rounded-2xl bg-black px-5 shadow-2xl shadow-black/40 ring-1 ring-cyan-300/20">
+              <Image alt="Radio Hit 90 y 2000" className="h-auto w-40 object-contain" height={160} priority src="/logo-home.jpeg" width={230} />
             </span>
             <p className="mt-8 inline-flex items-center gap-2 rounded-full bg-amber-400/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-amber-300 ring-1 ring-amber-400/20">
               <Sparkles className="h-3.5 w-3.5" />
@@ -297,8 +297,8 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
         <section className="flex items-center justify-center p-6 sm:p-10">
           <div className="w-full max-w-sm">
             <div className="mb-8 text-center">
-              <span className="mx-auto grid h-20 w-40 place-items-center rounded-2xl bg-white/95 px-5 shadow-2xl shadow-black/40 ring-1 ring-amber-300/30 lg:hidden">
-                <Image alt="Radio Labranza FM+" className="h-auto w-32 object-contain" height={56} priority src="/logo-radio.png" width={180} />
+              <span className="mx-auto grid h-32 w-40 place-items-center overflow-hidden rounded-2xl bg-black px-5 shadow-2xl shadow-black/40 ring-1 ring-cyan-300/20 lg:hidden">
+                <Image alt="Radio Hit 90 y 2000" className="h-auto w-32 object-contain" height={120} priority src="/logo-home.jpeg" width={180} />
               </span>
               <p className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-amber-300/10 px-3.5 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-amber-200 ring-1 ring-amber-300/20 lg:mt-0">
                 <Sparkles className="h-3 w-3" />
@@ -400,12 +400,12 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       <div className="admin-bg min-h-screen w-full lg:ml-64">
         <AdminTopbar />
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-white/[0.06] bg-[#020617]/95 px-4 text-white shadow-lg shadow-slate-950/30 backdrop-blur-xl lg:hidden">
-          <Link href="/admin" className="grid h-10 w-36 place-items-center rounded-lg bg-white/95 px-3 shadow-md shadow-black/30">
+          <Link href="/admin" className="grid h-12 w-36 place-items-center overflow-hidden rounded-lg bg-black px-3 shadow-md shadow-black/30 ring-1 ring-cyan-300/20">
             <Image
-              alt="Radio Labranza FM+"
-              className="h-7 w-auto object-contain"
-              height={28}
-              src="/logo-radio.png"
+              alt="Radio Hit 90 y 2000"
+              className="h-10 w-auto object-contain"
+              height={48}
+              src="/logo-home.jpeg"
               width={112}
             />
           </Link>

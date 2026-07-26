@@ -15,7 +15,6 @@ import {
   Gauge,
   ImageIcon,
   Layers3,
-  ListMusic,
   Megaphone,
   Pencil,
   Plus,
@@ -32,6 +31,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { api, type Article } from '@/lib/api';
+import { confirmToast } from '@/lib/confirm-toast';
 import { RichTextEditor } from '@/components/admin/rich-text-editor';
 import { ImageUpload } from '@/components/admin/image-upload';
 
@@ -70,19 +70,6 @@ const categories = [
     accent: 'from-fuchsia-300 via-amber-300 to-sky-300',
     tone: 'text-fuchsia-100',
     chip: 'bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200',
-  },
-  {
-    id: 'Rankings semanal' as const,
-    label: 'Rankings semanal',
-    shortLabel: 'Rankings',
-    singular: 'ranking',
-    icon: ListMusic,
-    eyebrow: 'Chart room',
-    title: 'Rankings semanales',
-    description: 'Ordena conteos, notas de canciones y destacados de la semana con una presentacion mas cercana a una lista musical profesional.',
-    accent: 'from-rose-300 via-amber-300 to-emerald-300',
-    tone: 'text-rose-100',
-    chip: 'bg-rose-50 text-rose-800 border-rose-200',
   },
 ];
 
@@ -164,32 +151,47 @@ function EditorialChecklist({ article }: { article: { title: string; excerpt: st
   );
 }
 
-function ArticlePreview({ article }: { article: Partial<Article> & { title: string; excerpt: string; body: string } }) {
+function ArticlePreview({
+  article,
+  label = 'Vista contenido'
+}: {
+  article: Partial<Article> & { title: string; excerpt: string; body: string };
+  label?: string;
+}) {
   const focal = article.coverFocal ? article.coverFocal : undefined;
   const title = article.title || 'Sin titulo';
   const excerpt = article.excerpt || 'Sin resumen';
+  const words = countWords(article.body);
+  const minutes = readingMinutes(article.body);
   return (
-    <div className="admin-shell-frame overflow-hidden rounded-lg bg-white/92">
+    <div className="admin-article-preview">
+      <div className="admin-article-preview-head">
+        <span>
+          <Eye className="h-3.5 w-3.5" />
+          {label}
+        </span>
+        <small>Modelo editorial web</small>
+      </div>
+      <div className="admin-article-preview-hero">
+        <div>
+          <p>Radio Labranza FM+</p>
+          <h2>{title}</h2>
+          <strong>{excerpt}</strong>
+          <div>
+            <FieldHint icon={Type} label="Palabras" value={String(words)} />
+            <FieldHint icon={CalendarClock} label="Lectura" value={`${minutes} min`} />
+          </div>
+        </div>
+      </div>
       {article.coverUrl && (
-        <div className="relative h-64 w-full overflow-hidden bg-slate-950">
-          <img src={article.coverUrl} alt="" className="h-full w-full" style={{ objectFit: 'cover', objectPosition: focal ?? '50% 50%' }} />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950/65 to-transparent" />
+        <div className="admin-article-preview-cover">
+          <img src={article.coverUrl} alt="" style={{ objectPosition: focal ?? '50% 50%' }} />
         </div>
       )}
-      <div className="p-4 sm:p-6">
-        <span className="inline-flex items-center gap-1 rounded-full bg-slate-950 px-3 py-1 text-xs font-bold text-amber-200 shadow-sm">
-          <Eye className="h-3 w-3" />
-          Vista noticia
-        </span>
-        <h2 className="mt-4 text-2xl font-black leading-tight text-slate-950 sm:text-3xl">{title}</h2>
-        <p className="mt-3 text-base leading-7 text-slate-600">{excerpt}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <FieldHint icon={Type} label="Palabras" value={String(countWords(article.body))} />
-          <FieldHint icon={CalendarClock} label="Lectura" value={`${readingMinutes(article.body)} min`} />
-        </div>
+      <div className="admin-article-preview-body">
+        <p>{excerpt}</p>
         <div
-          className="prose prose-sm mt-6 max-w-none text-slate-700"
-          dangerouslySetInnerHTML={{ __html: article.body || '<p class="text-zinc-300 italic">Sin contenido</p>' }}
+          dangerouslySetInnerHTML={{ __html: article.body || '<p>Sin contenido</p>' }}
         />
       </div>
     </div>
@@ -242,6 +244,36 @@ export default function AdminContentPage() {
   const currentSlug = slugify(formSlug || formTitle);
   const activeCategory = categories.find((item) => item.id === category) ?? categories[0];
   const ActiveCategoryIcon = activeCategory.icon;
+  const contentCopy =
+    category === 'Noticias'
+      ? {
+          previewLabel: 'Vista noticia',
+          editorTitle: 'Nueva noticia local',
+          identityTitle: 'Identidad de la noticia',
+          titleLabel: 'Titulo',
+          titlePlaceholder: 'Ej: Labranza inaugura nueva actividad comunitaria',
+          excerptLabel: 'Bajada / resumen',
+          excerptPlaceholder: 'Resume la noticia en una frase atractiva y clara para portada.',
+          bodyTitle: 'Cuerpo de la noticia',
+          bodyPlaceholder: 'Cuenta que paso, donde, cuando y por que le importa a la comunidad.',
+          publishLabel: 'Publicar noticia',
+          draftLabel: 'Guardar borrador',
+          routeHint: '/noticias/'
+        }
+      : {
+          previewLabel: 'Vista especial musical',
+          editorTitle: 'Nuevo especial musical',
+          identityTitle: 'Identidad del especial',
+          titleLabel: 'Tema / titular',
+          titlePlaceholder: 'Ej: Los himnos 90 y 2000 que volvieron a sonar',
+          excerptLabel: 'Gancho editorial',
+          excerptPlaceholder: 'Describe el recuerdo, artista o momento musical que hace atractivo este especial.',
+          bodyTitle: 'Historia musical',
+          bodyPlaceholder: 'Agrega contexto, recuerdos, canciones clave y por que conecta con la audiencia.',
+          publishLabel: 'Publicar especial',
+          draftLabel: 'Guardar borrador',
+          routeHint: '/exitos/'
+        };
   const activeArticles = adminData.articles.filter((article) => article.category === category);
   const activePublishedCount = activeArticles.filter((article) => article.status === 'PUBLISHED').length;
   const activeDraftCount = activeArticles.filter((article) => article.status === 'DRAFT').length;
@@ -361,63 +393,47 @@ export default function AdminContentPage() {
       </div>
 
       <section className="admin-shell-frame overflow-hidden rounded-[1.15rem]">
-        <div className="grid gap-4 border-b border-slate-900/10 bg-white/60 p-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+        <div className="grid gap-4 border-b border-slate-900/10 bg-white/72 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div>
-            <p className="text-xs font-black uppercase text-amber-700">Biblioteca editorial</p>
-            <h2 className="mt-1 text-xl font-black text-slate-950">Cabina de contenido</h2>
-            <p className="mt-1 text-sm text-slate-500">Cambia de seccion, revisa estados y encuentra rapido lo que hay que publicar.</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Sala editorial</p>
+            <h2 className="mt-1 text-2xl font-black text-slate-950">Noticias y especiales listos para salir al aire</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">Selecciona mesa, revisa estado y entra directo al compositor. La logica es de noticiero: portada, bajada, cuerpo, revision y publicacion.</p>
           </div>
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              className="admin-input pl-9"
-              placeholder="Buscar por titulo, slug o resumen..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+          <Button asChild className="h-11 rounded-lg bg-slate-950 px-4 text-sm font-black text-amber-200 hover:bg-slate-900">
+            <a href="#editorial-compose">
+              <Plus className="h-4 w-4" />
+              Escribir ahora
+            </a>
+          </Button>
         </div>
 
-        <div className="grid gap-3 p-4 lg:grid-cols-3">
+        <div className="grid gap-3 border-b border-slate-900/10 bg-slate-950 p-2 sm:grid-cols-2">
           {categories.map((cat) => {
-            const cabina =
-              cat.id === 'Noticias' ? { idle: 'border-amber-200 bg-amber-50/60 text-slate-800 hover:bg-amber-50 hover:border-amber-300 hover:shadow-md', active: 'border-amber-300 bg-amber-100 text-amber-900 shadow-lg shadow-amber-200/40', iconIdle: 'bg-amber-100 text-amber-700', iconActive: 'bg-amber-200 text-amber-800' } :
-              cat.id === 'Exitos 90,2000' ? { idle: 'border-fuchsia-200 bg-fuchsia-50/60 text-slate-800 hover:bg-fuchsia-50 hover:border-fuchsia-300 hover:shadow-md', active: 'border-fuchsia-300 bg-fuchsia-100 text-fuchsia-900 shadow-lg shadow-fuchsia-200/40', iconIdle: 'bg-fuchsia-100 text-fuchsia-700', iconActive: 'bg-fuchsia-200 text-fuchsia-800' } :
-              { idle: 'border-rose-200 bg-rose-50/60 text-slate-800 hover:bg-rose-50 hover:border-rose-300 hover:shadow-md', active: 'border-rose-300 bg-rose-100 text-rose-900 shadow-lg shadow-rose-200/40', iconIdle: 'bg-rose-100 text-rose-700', iconActive: 'bg-rose-200 text-rose-800' };
-            const idleStyle = cabina.idle;
-            const iconIdle = cabina.iconIdle;
+            const active = category === cat.id;
+            const count = adminData.articles.filter((a) => a.category === cat.id).length;
             return (
             <button
               key={cat.id}
               onClick={() => { setCategory(cat.id); setEditingId(null); setSearch(''); }}
-              className={`group relative overflow-hidden rounded-[1rem] border p-4 text-left transition-all duration-200 ${
-                category === cat.id ? cabina.active : idleStyle
+              className={`group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-4 py-3 text-left transition-all duration-200 ${
+                active ? 'bg-white text-slate-950 shadow-lg shadow-black/20' : 'bg-white/[0.06] text-slate-300 hover:bg-white/[0.10] hover:text-white'
               }`}
               type="button"
             >
-              <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${cat.accent}`} />
-              <span className="flex items-start justify-between gap-3">
-                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${category === cat.id ? cabina.iconActive : iconIdle}`}>
-                  <cat.icon className="h-5 w-5" />
-                </span>
-                <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${
-                  category === cat.id
-                    ? cat.id === 'Noticias' ? 'border-amber-300 bg-amber-200 text-amber-800'
-                    : cat.id === 'Exitos 90,2000' ? 'border-fuchsia-300 bg-fuchsia-200 text-fuchsia-800'
-                    : 'border-rose-300 bg-rose-200 text-rose-800'
-                    : cat.chip
-                }`}>
-                  {adminData.articles.filter((a) => a.category === cat.id).length}
-                </span>
+              <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${active ? 'bg-amber-400 text-slate-950' : 'bg-slate-950 text-amber-300 ring-1 ring-white/10'}`}>
+                <cat.icon className="h-5 w-5" />
               </span>
-              <span className="mt-4 block text-base font-black">{cat.shortLabel}</span>
-              <span className={`mt-1 block text-xs leading-5 ${category === cat.id ? 'text-slate-600' : 'text-slate-600'}`}>{cat.description}</span>
+              <span className="min-w-0">
+                <span className="block text-sm font-black">{cat.label}</span>
+                <span className={`mt-0.5 block truncate text-xs font-semibold ${active ? 'text-slate-500' : 'text-slate-500 group-hover:text-slate-300'}`}>{cat.eyebrow}</span>
+              </span>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-black ${active ? 'bg-slate-950 text-amber-200' : 'bg-white/10 text-slate-300'}`}>{count}</span>
             </button>
             );
           })}
         </div>
 
-        <div className="grid gap-4 border-t border-slate-900/10 bg-slate-50/55 p-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-center">
+        <div className="grid gap-4 bg-slate-50/70 p-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
           <div className="flex flex-wrap gap-2">
             {[
               { id: 'ALL' as const, label: 'Todos', colors: { active: 'border-slate-700 bg-slate-900 text-white hover:bg-slate-800', idle: 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-800' } },
@@ -437,12 +453,38 @@ export default function AdminContentPage() {
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2">
-            <FieldHint icon={Type} label="Palabras" value={String(currentWords)} />
-            <FieldHint icon={CalendarClock} label="Lectura" value={`${readingMinutes(formBody)} min`} />
-            <FieldHint icon={Gauge} label="Calidad" value={`${currentDraftScore}%`} />
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              className="admin-input pl-9"
+              placeholder="Buscar por titulo, slug o resumen..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
+      </section>
+
+      <section className="grid gap-3 rounded-[1.1rem] border border-slate-900/10 bg-white/78 p-3 shadow-[0_18px_52px_rgba(15,23,42,0.06)] sm:grid-cols-4">
+        {[
+          { label: '1. Portada', value: formCover ? 'Imagen lista' : 'Falta imagen', icon: ImageIcon },
+          { label: '2. Bajada', value: formExcerpt ? 'Resumen listo' : 'Sin bajada', icon: Type },
+          { label: '3. Cuerpo', value: `${currentWords} palabras`, icon: FileText },
+          { label: '4. Calidad', value: `${currentDraftScore}% listo`, icon: Gauge },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-3" key={item.label}>
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-slate-950 text-amber-300">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">{item.label}</span>
+                <strong className="text-sm text-slate-950">{item.value}</strong>
+              </span>
+            </div>
+          );
+        })}
       </section>
 
       <section className="admin-ops-strip grid gap-3 rounded-[1.1rem] p-3 sm:grid-cols-3">
@@ -560,7 +602,12 @@ export default function AdminContentPage() {
                       title="Eliminar"
                       className="admin-action-delete"
                       disabled={saving}
-                      onClick={() => { if (window.confirm('Eliminar este articulo?')) runAction(() => api.deleteArticle(token, article.id), 'Articulo eliminado.'); }}
+                      onClick={() => confirmToast({
+                        title: 'Eliminar articulo',
+                        description: article.title,
+                        confirmLabel: 'Eliminar',
+                        onConfirm: () => runAction(() => api.deleteArticle(token, article.id), 'Articulo eliminado.'),
+                      })}
                       type="button"
                       variant="outline"
                     >
@@ -648,6 +695,7 @@ export default function AdminContentPage() {
                               coverUrl: editCover === undefined ? article.coverUrl ?? undefined : editCover ?? undefined,
                               coverFocal: editFocal ?? article.coverFocal ?? undefined,
                             }}
+                            label={contentCopy.previewLabel}
                           />
                           </div>
                         </div>
@@ -662,7 +710,7 @@ export default function AdminContentPage() {
       </div>
 
       {/* New Article Form */}
-      <div className="admin-shell-frame overflow-hidden rounded-xl">
+      <div className="admin-shell-frame overflow-hidden rounded-xl" id="editorial-compose">
         <div className="flex min-h-14 items-center justify-between gap-4 border-b border-white/10 bg-[#020617] px-4 py-3 text-white sm:px-6">
           <div className="flex items-center gap-3">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-400 text-slate-950 shadow-sm shadow-amber-950/30">
@@ -671,7 +719,7 @@ export default function AdminContentPage() {
             <div>
               <p className="text-[10px] font-black uppercase leading-none tracking-[0.14em] text-amber-300">Redaccion</p>
               <h2 className="mt-1 text-sm font-black leading-none tracking-tight sm:text-base">
-                Nuevo articulo en {category.toLowerCase()}
+                {contentCopy.editorTitle}
               </h2>
             </div>
           </div>
@@ -697,6 +745,7 @@ export default function AdminContentPage() {
                 coverUrl: formCover,
                 coverFocal: formFocal,
               }}
+              label={contentCopy.previewLabel}
             />
             <EditorialChecklist
               article={{
@@ -714,12 +763,12 @@ export default function AdminContentPage() {
               <section className="grid gap-4 rounded-lg border border-slate-900/10 bg-white/70 p-4">
                 <div className="flex items-center gap-2">
                   <Type className="h-4 w-4 text-amber-600" />
-                  <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-600">Identidad de la noticia</h3>
+                  <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-600">{contentCopy.identityTitle}</h3>
                 </div>
                 <div className="grid gap-4 md:grid-cols-[1.35fr_0.85fr]">
                   <div className="grid gap-2">
-                    <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Titulo</label>
-                    <input className="admin-input text-base font-bold" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} name="title" placeholder="Ej: Labranza inaugura nueva..." required />
+                    <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">{contentCopy.titleLabel}</label>
+                    <input className="admin-input text-base font-bold" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} name="title" placeholder={contentCopy.titlePlaceholder} required />
                   </div>
                   <div className="grid gap-2">
                     <label className="flex items-center justify-between gap-2 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
@@ -739,13 +788,13 @@ export default function AdminContentPage() {
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Bajada / resumen</label>
+                  <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">{contentCopy.excerptLabel}</label>
                   <textarea
                     className="admin-input min-h-24 resize-y leading-relaxed"
                     value={formExcerpt}
                     onChange={(e) => setFormExcerpt(e.target.value)}
                     name="excerpt"
-                    placeholder="Resume la noticia en una frase atractiva y clara para portada."
+                    placeholder={contentCopy.excerptPlaceholder}
                     required
                   />
                 </div>
@@ -763,14 +812,14 @@ export default function AdminContentPage() {
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-amber-600" />
-                    <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-600">Cuerpo de la noticia</h3>
+                    <h3 className="text-sm font-black uppercase tracking-[0.12em] text-slate-600">{contentCopy.bodyTitle}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <FieldHint icon={Type} label="Palabras" value={String(currentWords)} />
                     <FieldHint icon={CalendarClock} label="Lectura" value={`${readingMinutes(formBody)} min`} />
                   </div>
                 </div>
-                <RichTextEditor value={formBody} onChange={setFormBody} placeholder="Escribe el contenido aqui..." minHeight={360} />
+                <RichTextEditor value={formBody} onChange={setFormBody} placeholder={contentCopy.bodyPlaceholder} minHeight={360} />
               </section>
             </div>
 
@@ -799,7 +848,7 @@ export default function AdminContentPage() {
                 <div className="mt-4 grid gap-2 rounded-lg bg-slate-950 p-4 text-sm text-slate-300">
                   <span className="font-black text-white">{formPublish ? 'Se publicara ahora' : 'Se guardara como borrador'}</span>
                   <span>Categoria: {category}</span>
-                  <span>URL: /noticias/{currentSlug || 'slug-pendiente'}</span>
+                  <span>Ruta publica: {contentCopy.routeHint}{currentSlug || 'slug-pendiente'}</span>
                 </div>
                 <div className="mt-4 grid gap-2">
                   <Button
@@ -808,7 +857,7 @@ export default function AdminContentPage() {
                     type="submit"
                   >
                     {formPublish ? <Send className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-                    {saving ? 'Guardando...' : formPublish ? 'Publicar articulo' : 'Guardar borrador'}
+                    {saving ? 'Guardando...' : formPublish ? contentCopy.publishLabel : contentCopy.draftLabel}
                   </Button>
                   <Button className="admin-action-cancel" onClick={resetForm} type="button" variant="outline">
                     Limpiar editor

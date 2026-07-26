@@ -1,8 +1,9 @@
 'use client';
 
-import { Camera, Download, Eye, Heart, ImageIcon, X } from 'lucide-react';
+import { Camera, Download, Eye, Heart, ImageIcon, MessageCircle, Send, X } from 'lucide-react';
+import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { api } from '@/lib/api';
+import { api, type ArticleComment } from '@/lib/api';
 
 type GalleryItem = {
   id: number;
@@ -10,6 +11,7 @@ type GalleryItem = {
   excerpt: string;
   imageUrl: string | null;
   likes: number;
+  commentsCount: number;
   slug: string;
 };
 
@@ -17,6 +19,9 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [likesMap, setLikesMap] = useState<Record<number, number>>({});
+  const [commentsMap, setCommentsMap] = useState<Record<number, ArticleComment[]>>({});
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentDraft, setCommentDraft] = useState('');
   const [likedSet, setLikedSet] = useState<Set<number>>(() => {
     if (typeof window === 'undefined') return new Set();
     return new Set(
@@ -25,8 +30,6 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
   });
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  const featured = items[0];
-  const rest = items.slice(1);
   const current = items[index];
 
   const downloadName = useMemo(
@@ -37,6 +40,7 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
   const openAt = useCallback((i: number) => {
     setIndex(i);
     setOpen(true);
+    setCommentDraft('');
   }, []);
 
   const go = useCallback(
@@ -56,6 +60,15 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [open, close, go]);
+
+  useEffect(() => {
+    if (!open || !current || commentsMap[current.id]) return;
+    setCommentsLoading(true);
+    api.articleComments(current.id)
+      .then((comments) => setCommentsMap((prev) => ({ ...prev, [current.id]: comments })))
+      .catch(() => setCommentsMap((prev) => ({ ...prev, [current.id]: [] })))
+      .finally(() => setCommentsLoading(false));
+  }, [open, current, commentsMap]);
 
   async function handleLike(id: number) {
     if (likedSet.has(id)) return;
@@ -77,58 +90,44 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
   }
 
   const getLikes = (item: GalleryItem) => likesMap[item.id] ?? item.likes;
+  const getComments = (item: GalleryItem) => commentsMap[item.id] ?? [];
+  const getCommentsCount = (item: GalleryItem) => commentsMap[item.id]?.length ?? item.commentsCount;
+
+  async function handleCommentSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!current) return;
+    const text = commentDraft.trim();
+    if (!text) return;
+    setCommentDraft('');
+    const temp: ArticleComment = {
+      id: -Date.now(),
+      articleId: current.id,
+      body: text,
+      author: null,
+      createdAt: new Date().toISOString()
+    };
+    setCommentsMap((prev) => ({ ...prev, [current.id]: [...(prev[current.id] ?? []), temp] }));
+    try {
+      const saved = await api.createArticleComment(current.id, { body: text });
+      setCommentsMap((prev) => ({
+        ...prev,
+        [current.id]: (prev[current.id] ?? []).map((comment) => (comment.id === temp.id ? saved : comment))
+      }));
+    } catch {
+      setCommentsMap((prev) => ({
+        ...prev,
+        [current.id]: (prev[current.id] ?? []).filter((comment) => comment.id !== temp.id)
+      }));
+      setCommentDraft(text);
+    }
+  }
 
   return (
     <>
-      {featured && (
-        <article className="community-gallery-feature" style={{ cursor: 'pointer' }} onClick={() => openAt(0)}>
-          {featured.imageUrl ? (
-            <img alt="" className="community-gallery-feature-img" src={featured.imageUrl} />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-stone-800">
-              <Camera className="h-10 w-10 text-stone-600" />
-            </div>
-          )}
-          <div className="community-gallery-shade" />
-          <div className="community-gallery-caption">
-            <span>Imagen destacada</span>
-            <h3>{featured.title}</h3>
-            <p>{featured.excerpt}</p>
-            <div className="community-gallery-actions" style={{ marginTop: '0.65rem' }}>
-              <button
-                className="community-view-btn"
-                onClick={(e) => { e.stopPropagation(); openAt(0); }}
-                type="button"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                <span>Ver</span>
-              </button>
-              <button
-                className={`community-like-btn ${likedSet.has(featured.id) ? 'is-liked' : ''}`}
-                disabled={likedSet.has(featured.id)}
-                onClick={(e) => { e.stopPropagation(); handleLike(featured.id); }}
-                type="button"
-              >
-                <Heart className="h-3.5 w-3.5" />
-                <span>{getLikes(featured)}</span>
-              </button>
-              <a
-                className="community-download-btn"
-                download={(featured.title || 'galeria').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.jpg'}
-                href={featured.imageUrl ?? ''}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span>Descargar</span>
-              </a>
-            </div>
-          </div>
-        </article>
-      )}
       <div className="community-gallery-grid">
-        {rest.map((item, i) => (
+        {items.map((item, i) => (
           <article className="community-gallery-card" key={item.id}>
-            <button className="block w-full cursor-pointer text-left" onClick={() => openAt(i + 1)} type="button">
+            <button className="block w-full cursor-pointer text-left" onClick={() => openAt(i)} type="button">
               {item.imageUrl ? (
                 <img alt="" className="w-full" src={item.imageUrl} style={{ height: 170, objectFit: 'cover' }} />
               ) : (
@@ -144,7 +143,7 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
             <div className="flex items-center gap-2 px-[0.85rem] pb-[0.75rem] sm:px-[1rem] sm:pb-[0.85rem]">
               <button
                 className="community-view-btn"
-                onClick={() => openAt(i + 1)}
+                onClick={() => openAt(i)}
                 type="button"
               >
                 <Eye className="h-3.5 w-3.5" />
@@ -163,6 +162,10 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
                 <Download className="h-3.5 w-3.5" />
                 <span>Descargar</span>
               </a>
+              <button className="community-comment-btn" onClick={() => openAt(i)} type="button">
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>{getCommentsCount(item)}</span>
+              </button>
             </div>
           </article>
         ))}
@@ -171,7 +174,7 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
       {open && current && (
         <div
           ref={backdropRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#050816]/94 p-3 backdrop-blur-md sm:p-5"
+          className="community-lightbox-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[#050816]/94 p-3 backdrop-blur-md sm:p-5"
           onClick={(e) => { if (e.target === backdropRef.current) close(); }}
         >
           <button
@@ -244,6 +247,28 @@ export function GalleryWithLightbox({ items }: { items: GalleryItem[] }) {
                   <Download className="h-3.5 w-3.5" />
                   <span>Descargar</span>
                 </a>
+              </div>
+              <div className="community-lightbox-comments">
+                <div className="community-lightbox-comments-head">
+                  <MessageCircle className="h-4 w-4" />
+                  <strong>Comentarios</strong>
+                  <span>{getCommentsCount(current)}</span>
+                </div>
+                <div className="community-lightbox-comment-list">
+                  {commentsLoading ? (
+                    <p className="is-empty">Cargando comentarios...</p>
+                  ) : getComments(current).length ? (
+                    getComments(current).map((comment) => <p key={comment.id}>{comment.body}</p>)
+                  ) : (
+                    <p className="is-empty">Se el primero en comentar esta foto.</p>
+                  )}
+                </div>
+                <form className="community-lightbox-comment-form" onSubmit={handleCommentSubmit}>
+                  <input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Escribe un comentario breve" />
+                  <button aria-label="Enviar comentario" type="submit">
+                    <Send className="h-3.5 w-3.5" />
+                  </button>
+                </form>
               </div>
             </aside>
           </section>

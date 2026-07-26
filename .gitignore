@@ -1,6 +1,8 @@
 node_modules
 dist
 .next
+.next-dev
+apps/web/.next-dev
 .env
 .env.local
 *.tsbuildinfo
@@ -11,3 +13,10 @@ logs
 apps/api/uploads
 
 .vercel
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

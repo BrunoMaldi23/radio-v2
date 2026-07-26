@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { ArticlesService } from './articles.service';
+import { CreateArticleCommentDto } from './dto/create-article-comment.dto';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
@@ -28,6 +29,11 @@ export class ArticlesController {
     return this.articlesService.findBySlug(slug);
   }
 
+  @Get(':id/gallery')
+  findEventGallery(@Param('id', ParseIntPipe) id: number) {
+    return this.articlesService.findEventGallery(id);
+  }
+
   @Post(':id/attend')
   attend(@Param('id', ParseIntPipe) id: number) {
     return this.articlesService.attend(id);
@@ -38,9 +44,24 @@ export class ArticlesController {
     return this.articlesService.like(id);
   }
 
+  @Get(':id/comments')
+  comments(@Param('id', ParseIntPipe) id: number) {
+    return this.articlesService.comments(id);
+  }
+
+  @Post(':id/comments')
+  createComment(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateArticleCommentDto) {
+    return this.articlesService.createComment(id, dto);
+  }
+
   @Post('community-submissions')
   createCommunitySubmission(@Body() dto: CreateArticleDto) {
     return this.articlesService.createCommunitySubmission(dto);
+  }
+
+  @Post(':id/gallery-submissions')
+  createEventGallerySubmission(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateArticleDto) {
+    return this.articlesService.createEventGallerySubmission(id, dto);
   }
 
   @Post()

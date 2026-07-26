@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
-import { ThumbsUp, Trophy } from 'lucide-react';
+import { Music2, ThumbsUp, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { API_URL, api, type RankingTrack } from '@/lib/api';
 
@@ -55,8 +55,8 @@ export function RankingBoard({ initialTracks }: RankingBoardProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-slate-900/10 bg-white/78 shadow-[0_22px_60px_rgba(15,23,42,0.1)] backdrop-blur">
       {error && <div className="border-b border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700">{error}</div>}
-      <div className="hidden grid-cols-[72px_1.5fr_1fr_120px_130px] gap-4 border-b border-slate-900/10 bg-slate-950 px-5 py-3 text-xs font-bold uppercase tracking-normal text-slate-300 md:grid">
-        <span>#</span>
+      <div className="hidden grid-cols-[84px_1.5fr_1fr_120px_130px] gap-4 border-b border-slate-900/10 bg-slate-950 px-5 py-3 text-xs font-bold uppercase tracking-normal text-slate-300 md:grid">
+        <span>Portada</span>
         <span>Tema</span>
         <span>Artista</span>
         <span>Votos</span>
@@ -70,14 +70,21 @@ export function RankingBoard({ initialTracks }: RankingBoardProps) {
         )}
         {sortedTracks.map((song, index) => (
           <article
-            className="grid gap-3 px-4 py-4 transition hover:bg-amber-50/60 md:grid-cols-[72px_1.5fr_1fr_120px_130px] md:items-center md:gap-4 md:px-5"
+            className="grid gap-3 px-4 py-4 transition hover:bg-amber-50/60 md:grid-cols-[84px_1.5fr_1fr_120px_130px] md:items-center md:gap-4 md:px-5"
             key={song.id}
           >
             <div className="flex items-center gap-3">
-              <span className={`grid h-11 w-11 place-items-center rounded-xl text-sm font-black shadow-sm ${
-                index === 0 ? 'bg-amber-400 text-slate-950' : 'bg-slate-950 text-amber-200 ring-1 ring-slate-900/10'
-              }`}>
-                {index + 1}
+              <span className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-slate-900/10 bg-white shadow-sm">
+                {song.artworkUrl ? (
+                  <img alt="" className="h-full w-full object-cover" src={song.artworkUrl} />
+                ) : (
+                  <Music2 className="h-6 w-6 text-slate-400" />
+                )}
+                <span className={`absolute -bottom-1 -right-1 grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-[11px] font-black shadow-md ${
+                  index === 0 ? 'bg-amber-400 text-slate-950' : 'bg-slate-950 text-amber-200 ring-1 ring-slate-900/10'
+                }`}>
+                  {index + 1}
+                </span>
               </span>
               {index === 0 && <Trophy className="h-5 w-5 text-amber-500 md:hidden" />}
             </div>

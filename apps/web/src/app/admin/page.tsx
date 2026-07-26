@@ -12,6 +12,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
+  PenLine,
 } from 'lucide-react';
 import Link from 'next/link';
 import { StreamRuntimePanel } from '@/components/stream-runtime-panel';
@@ -69,10 +70,13 @@ export default function AdminDashboard() {
               <LayoutDashboard className="h-7 w-7" />
             </span>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-200">Centro de control</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-200">Sala de redaccion</p>
               <h1 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
-                Bienvenido, <span className="text-amber-200">{user?.name}</span>
+                Panel editorial Radio Labranza FM+
               </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                Gestiona noticias, especiales musicales, comunidad y senales desde un flujo pensado para publicar rapido y revisar con criterio de noticiero.
+              </p>
               <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-300">
                 <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-amber-300" />{publishedArticles} publicados</span>
                 <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-300" />{draftArticles} borradores</span>
@@ -95,13 +99,23 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+        <Link href="/admin/contenido?category=Noticias#editorial-compose" className="group relative overflow-hidden rounded-xl border border-slate-900/10 bg-slate-950 p-5 text-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 to-teal-300" />
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">Accion principal</p>
+          <h2 className="mt-2 text-2xl font-black">Crear publicacion</h2>
+          <p className="mt-2 max-w-lg text-sm leading-6 text-slate-400">Abre el compositor de Noticias o Exitos con portada, bajada, cuerpo, revision y salida al sitio.</p>
+          <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-sm font-black text-slate-950">
+            <PenLine className="h-4 w-4" />
+            Ir a redaccion
+          </span>
+        </Link>
         <StatCard label="Noticias" href="/admin/contenido?category=Noticias" value={adminData.articles.filter((a) => a.category === 'Noticias').length} icon={Newspaper} />
         <StatCard label="Exitos" href="/admin/contenido?category=Exitos%2090%2C2000" value={adminData.articles.filter((a) => a.category === 'Exitos 90,2000').length} icon={FileText} />
-        <StatCard label="Rankings" href="/admin/contenido?category=Rankings%20semanal" value={adminData.articles.filter((a) => a.category === 'Rankings semanal').length} icon={ListMusic} />
+        <StatCard label="Ranking live" href="/admin/ranking" value={adminData.ranking.length} icon={ListMusic} />
         <StatCard label="Comunidad" href="/admin/comunidad" value={communityItems} icon={MapPin} />
-        <StatCard label="Usuarios" href="/admin/usuarios" value={adminData.users.length} icon={Users} />
         <StatCard label="Transmision" href="/admin/transmision" value={1} icon={Radio} />
+        {user?.role === 'ADMIN' && <StatCard label="Usuarios" href="/admin/usuarios" value={adminData.users.length} icon={Users} />}
       </div>
 
       {/* Main Grid */}
@@ -125,7 +139,7 @@ export default function AdminDashboard() {
               {[
                 { label: 'Mesa editorial', href: '/admin/contenido?category=Noticias', icon: Newspaper, desc: 'Noticias, bajadas, portada y publicacion.' },
                 { label: 'Exitos 90 y 2000', href: '/admin/contenido?category=Exitos%2090%2C2000', icon: FileText, desc: 'Contenido musical con lectura y portada.' },
-                { label: 'Ranking semanal', href: '/admin/contenido?category=Rankings%20semanal', icon: ListMusic, desc: 'Ranking editorial listo para portada.' },
+                { label: 'Ranking live', href: '/admin/ranking', icon: ListMusic, desc: 'Canciones activas, votos y orden en vivo.' },
                 { label: 'Comunidad', href: '/admin/comunidad', icon: MapPin, desc: 'Eventos, galeria y momentos locales.' },
                 { label: 'Senales', href: '/admin/transmision', icon: Radio, desc: 'Estado de radio, TV y relays.' },
               ].map((item) => {

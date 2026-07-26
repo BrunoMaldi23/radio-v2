@@ -3,12 +3,12 @@ import { RootLayoutClient } from '@/components/root-layout-client';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Radio Labranza FM+ 107.5',
-  description: 'Mas musica, compania y entretencion',
+  title: 'Radio Hit 90 y 2000',
+  description: 'Los exitos que marcaron tu vida',
   icons: {
-    icon: '/logo-radio.png',
-    shortcut: '/logo-radio.png',
-    apple: '/logo-radio.png'
+    icon: '/logo-home.jpeg',
+    shortcut: '/logo-home.jpeg',
+    apple: '/logo-home.jpeg'
   }
 };
 

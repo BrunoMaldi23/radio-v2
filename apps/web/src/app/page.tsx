@@ -3,122 +3,188 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, CalendarDays, Headphones, Mic2, Music2, Play, Radio, Sparkles, Tv } from 'lucide-react';
-import { ArticleCard } from '@/components/article-card';
+import {
+  ArrowRight,
+  CalendarDays,
+  ChevronRight,
+  Headphones,
+  Music2,
+  Newspaper,
+  Play,
+  Radio,
+  SignalHigh,
+  Sparkles,
+  Trophy,
+  Tv,
+  UsersRound
+} from 'lucide-react';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
-import { mapArticle } from '@/lib/content-mappers';
+import { fallbackImage, mapArticle } from '@/lib/content-mappers';
 
 const liveSignals = [
-  { title: 'Senal de Audio', description: 'Radio Labranza FM+ en vivo todo el dia', icon: Radio },
-  { title: 'Musica y compania', description: 'FM 107.5 desde Labranza', icon: Music2 },
-  { title: 'Labranza TV', description: 'Estudio, entrevistas y video en vivo', icon: Tv }
+  { title: 'Audio en vivo', description: 'Radio Hit 90 y 2000', icon: Radio, href: '/tv' },
+  { title: 'TV Digital', description: 'Estudio y transmision', icon: Tv, href: '/tv' },
+  { title: 'Ranking', description: 'Votacion de la audiencia', icon: Trophy, href: '/ranking' },
+  { title: 'Comunidad', description: 'Eventos y memoria local', icon: UsersRound, href: '/comunidad' }
 ];
 
 export default function Home() {
   const [articles, setArticles] = useState<ReturnType<typeof mapArticle>[]>([]);
   const [newArticles, setNewArticles] = useState<ReturnType<typeof mapArticle>[]>([]);
-  const [moments, setMoments] = useState<ReturnType<typeof mapArticle>[]>([]);
   const [ranking, setRanking] = useState<{ id: number; title: string; artist: string; votes: number; artworkUrl: string | null; isActive: boolean }[]>([]);
 
   useEffect(() => {
     Promise.all([
       api.articles('Noticias').then((items) => items.map(mapArticle)).catch(() => [] as ReturnType<typeof mapArticle>[]),
       api.articles('Exitos 90,2000').then((items) => items.map(mapArticle)).catch(() => [] as ReturnType<typeof mapArticle>[]),
-      api.articles('Rankings semanal').then((items) => items.map(mapArticle)).catch(() => [] as ReturnType<typeof mapArticle>[]),
       api.ranking().catch(() => []),
-    ]).then(([articles, newArticles, moments, ranking]) => {
+    ]).then(([articles, newArticles, ranking]) => {
       setArticles(articles);
       setNewArticles(newArticles);
-      setMoments(moments);
       setRanking(ranking);
     });
   }, []);
 
+  const featuredArticle = articles[0];
+  const secondaryArticles = articles.slice(1, 3);
+  const topSong = ranking[0];
+
   return (
-    <div className="mx-auto grid max-w-7xl gap-10">
-      <section className="ink-panel relative grid min-h-[500px] overflow-hidden rounded-xl text-white lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="absolute inset-0 frequency-lines opacity-60" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/70 to-transparent" />
-        <div className="relative grid content-center gap-6 p-5 sm:p-8 lg:p-10">
-          <div className="w-fit rounded-lg border border-white/15 bg-white px-5 py-4 shadow-2xl shadow-black/30">
-            <Image alt="Radio Labranza FM+" className="h-24 w-auto object-contain sm:h-28" height={132} priority src="/logo-radio.png" width={420} />
+    <div className="home-shell mx-auto grid max-w-7xl gap-8">
+      <section className="home-hero">
+        <div className="home-hero-copy">
+          <div className="home-logo-card">
+            <Image alt="Radio Hit 90 y 2000" className="h-24 w-auto object-contain sm:h-28" height={420} priority src="/logo-home.jpeg" width={420} />
           </div>
           <div>
-            <p className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+            <p className="home-live-eyebrow">
               <span className="h-2 w-2 rounded-full bg-rose-400 live-dot" />
-              FM 107.5 desde Labranza
+              Los exitos que marcaron tu vida
             </p>
-            <h1 className="mt-3 max-w-xl text-4xl font-black leading-none tracking-tight sm:text-6xl">La radio local con pulso digital</h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-slate-300">
-              Musica, noticias, TV en vivo y comunidad en una experiencia hecha para sonar cercana y verse moderna.
+            <h1>Radio Hit 90 y 2000 online.</h1>
+            <p>
+              Musica de los 90&apos;s y 2000&apos;s, noticias, TV en vivo y comunidad en una experiencia moderna, clara y conectada.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild className="h-12 rounded-full bg-amber-400 px-6 font-black text-slate-950 shadow-lg shadow-amber-950/30 hover:bg-amber-300">
+          <div className="home-hero-actions">
+            <Button asChild className="home-primary-action">
               <Link href="/tv">
                 <Play className="h-4 w-4" />
                 Ver en vivo
               </Link>
             </Button>
-            <Button asChild className="h-12 rounded-full border-white/20 bg-white/10 px-6 text-white hover:bg-white/20" variant="outline">
-              <Link href="/noticias">Ultimas noticias</Link>
+            <Button asChild className="home-secondary-action" variant="outline">
+              <Link href="/noticias">
+                Ultimas noticias
+                <ChevronRight className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
-          <div className="grid max-w-xl grid-cols-3 gap-2 pt-2 text-xs font-bold text-slate-300">
-            {['107.5 FM', 'TV Digital', 'Ranking Live'].map((item) => (
-              <span className="rounded-md border border-white/10 bg-white/6 px-3 py-2" key={item}>{item}</span>
-            ))}
+          <div className="home-signal-row">
+            {liveSignals.map((signal) => {
+              const Icon = signal.icon;
+              return (
+                <Link href={signal.href} key={signal.title}>
+                  <Icon className="h-4 w-4" />
+                  <span>{signal.title}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
-        <div className="relative min-h-[300px] bg-[linear-gradient(180deg,rgba(5,10,22,0.03),rgba(5,10,22,0.56)),url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1400&q=80')] bg-cover bg-center">
-          <div className="absolute inset-0 signal-grid opacity-20" />
-          <div className="absolute bottom-6 left-6 right-6 rounded-lg border border-white/20 bg-slate-950/70 p-4 text-white shadow-xl backdrop-blur">
-            <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-teal-200">
-              <Mic2 className="h-4 w-4" />
-              Ahora en vivo
-            </p>
-            <p className="mt-1 text-2xl font-black">Labranza FM+ Online</p>
-            <p className="mt-2 text-sm text-slate-300">Cabina abierta, comunidad conectada.</p>
+
+        <div className="home-live-console">
+          <div className="home-live-media">
+            <div className="home-live-media-image" />
+            <div className="home-onair-card">
+              <span>
+                <SignalHigh className="h-4 w-4" />
+                Ahora en vivo
+              </span>
+              <strong>Radio Hit 90 y 2000</strong>
+              <p>La cabina de los exitos que marcaron tu vida.</p>
+              <div className="home-status-row">
+                <small>
+                  <span className="home-status-dot" />
+                  Senal online
+                </small>
+                <small>Dial online</small>
+                <small>{topSong ? 'Ranking activo' : 'Ranking pronto'}</small>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="home-live-grid" aria-label="Accesos principales">
         {liveSignals.map((signal) => {
           const Icon = signal.icon;
           return (
             <Link
-              className="radio-panel group flex min-h-24 items-center gap-4 rounded-lg p-4 transition hover:-translate-y-1 hover:border-amber-300"
-              href={signal.title === 'Labranza TV' ? '/tv' : '/ranking'}
+              className="home-live-card group"
+              href={signal.href}
               key={signal.title}
             >
-              <span className="grid h-12 w-12 place-items-center rounded-lg bg-slate-950 text-amber-300 shadow-sm ring-1 ring-slate-900/10">
+              <span>
                 <Icon className="h-5 w-5" />
               </span>
-              <span className="min-w-0">
-                <span className="flex items-center gap-2 text-xs font-black uppercase tracking-normal text-rose-600">
+              <div className="min-w-0">
+                <small>
                   <span className="h-2 w-2 rounded-full bg-rose-500 live-dot" />
                   En vivo
-                </span>
-                <span className="block truncate text-lg font-black text-slate-950">{signal.title}</span>
-                <span className="block truncate text-sm text-slate-500">{signal.description}</span>
-              </span>
+                </small>
+                <strong>{signal.title}</strong>
+                <p>{signal.description}</p>
+              </div>
               <ArrowRight className="ml-auto h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-amber-600" />
             </Link>
           );
         })}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3 lg:items-start">
-        <div className="lg:col-span-2">
-          <SectionHeading eyebrow="Actualidad local" href="/noticias" title="Noticias destacadas" />
-          {articles.length ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {articles.slice(0, 2).map((article, index) => (
-                <ArticleCard article={article} featured={index === 0} key={article.slug} />
-              ))}
+      <section className="home-command-grid">
+        <div className="home-news-lab">
+          <SectionHeading eyebrow="Actualidad local" href="/noticias" title="Lo ultimo en Labranza" />
+          {featuredArticle ? (
+            <div className="home-news-layout">
+              <Link className="group relative min-h-[360px] overflow-hidden rounded-xl bg-slate-950 text-white shadow-[0_22px_64px_rgba(15,23,42,0.14)]" href={`/noticias/${featuredArticle.slug}`}>
+                <img
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-[1.03]"
+                  onError={(event) => {
+                    event.currentTarget.src = fallbackImage;
+                  }}
+                  src={featuredArticle.imageUrl ?? fallbackImage}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/58 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-3 py-1 text-xs font-black uppercase text-slate-950">
+                    <Newspaper className="h-3.5 w-3.5" />
+                    Portada local
+                  </span>
+                  <h3 className="mt-4 text-3xl font-black leading-tight">{featuredArticle.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-200">{featuredArticle.excerpt}</p>
+                </div>
+              </Link>
+              <div className="home-news-stack">
+                {secondaryArticles.length ? secondaryArticles.map((article) => (
+                  <Link className="home-mini-story" href={`/noticias/${article.slug}`} key={article.slug}>
+                    <span>
+                      <Newspaper className="h-4 w-4" />
+                      {article.category}
+                    </span>
+                    <strong>{article.title}</strong>
+                    <p>{article.excerpt}</p>
+                  </Link>
+                )) : (
+                  <div className="home-empty-compact">
+                    <CalendarDays className="h-5 w-5" />
+                    Se iran sumando mas historias locales.
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="radio-panel grid min-h-72 place-items-center rounded-lg border-dashed p-6 text-center">
@@ -131,38 +197,45 @@ export default function Home() {
           )}
         </div>
 
-        <aside className="grid gap-4">
-          <div className="ink-panel rounded-lg p-5 text-white">
-            <div className="flex items-center gap-3">
-              <Headphones className="h-5 w-5 text-teal-300" />
-              <h2 className="text-xl font-black">Ranking Labranza</h2>
+        <aside className="home-side-rail">
+          <div className="home-ranking-panel">
+            <div className="home-ranking-head">
+              <span><Headphones className="h-4 w-4" /> Ranking Labranza</span>
+              <Link href="/ranking">Votar</Link>
             </div>
-            <div className="mt-4 grid gap-3">
-              {ranking.slice(0, 3).map((song, index) => {
-                return (
-                  <Link className="flex items-center gap-3 rounded-md border border-white/10 bg-white/10 p-3 transition hover:bg-white/20" href="/ranking" key={song.id}>
-                    <span className="grid h-9 w-9 place-items-center rounded-md bg-amber-400 text-sm font-black text-slate-950">
-                      {index + 1}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-black text-white">{song.title}</span>
-                      <span className="block truncate text-xs text-slate-300">{song.artist}</span>
-                    </span>
-                    <ArrowRight className="ml-auto h-4 w-4 text-rose-300" />
-                  </Link>
-                );
-              })}
+            {topSong ? (
+              <div className="home-top-song">
+                <small>#1 de la semana</small>
+                <strong>{topSong.title}</strong>
+                <p>{topSong.artist}</p>
+              </div>
+            ) : null}
+            <div className="home-ranking-list">
+              {ranking.slice(0, 4).map((song, index) => (
+                <Link href="/ranking" key={song.id}>
+                  <span>{index + 1}</span>
+                  <div>
+                    <strong>{song.title}</strong>
+                    <p>{song.artist}</p>
+                  </div>
+                  <small>{song.votes}</small>
+                </Link>
+              ))}
               {!ranking.length && (
-                <div className="rounded-md border border-dashed border-white/20 bg-white/10 p-4 text-sm font-semibold text-slate-300">
-                  Pronto podras votar por tus canciones favoritas.
-                </div>
+                <div className="home-empty-dark">Pronto podras votar por tus canciones favoritas.</div>
               )}
             </div>
           </div>
+
+          <Link className="home-community-panel" href="/comunidad">
+            <span><UsersRound className="h-4 w-4" /> Comunidad</span>
+            <strong>Eventos, fotos y memoria local.</strong>
+            <p>Entra a las actividades y comparte registros con la comunidad.</p>
+          </Link>
         </aside>
       </section>
 
-      <section className="grid gap-4 rounded-xl border border-slate-900/10 bg-white/55 p-4 backdrop-blur md:grid-cols-3">
+      <section className="home-pulse-strip">
         {[
           { label: 'Cabina', value: 'En directo', icon: Radio },
           { label: 'Comunidad', value: 'Labranza conectada', icon: Sparkles },
@@ -170,47 +243,46 @@ export default function Home() {
         ].map((item) => {
           const Icon = item.icon;
           return (
-            <div className="flex items-center gap-3 rounded-lg bg-white/70 p-4" key={item.label}>
-              <span className="grid h-10 w-10 place-items-center rounded-md bg-teal-100 text-teal-800">
+            <div key={item.label}>
+              <span>
                 <Icon className="h-5 w-5" />
               </span>
-              <span>
-                <span className="block text-xs font-black uppercase tracking-[0.16em] text-slate-400">{item.label}</span>
-                <span className="block font-black text-slate-950">{item.value}</span>
-              </span>
+              <div>
+                <small>{item.label}</small>
+                <strong>{item.value}</strong>
+              </div>
             </div>
           );
         })}
       </section>
 
-      <section>
-        <SectionHeading eyebrow="Exitos 90,2000" href="/lo-nuevo" title="Exitos 90,2000" />
-        {newArticles.length ? (
-          <div className="grid gap-4 md:grid-cols-3">
-            {newArticles.slice(0, 3).map((article, index) => (
-              <ArticleCard article={article} featured={index === 0} key={article.slug} />
-            ))}
-          </div>
-        ) : (
-          <div className="radio-panel rounded-lg p-6 text-sm font-semibold text-slate-600">
-            Aun no hay publicaciones en Exitos 90,2000.
-          </div>
-        )}
-      </section>
-
-      <section>
-        <SectionHeading eyebrow="Ranking de la semana" href="/mejores-momentos" title="Rankings semanal" />
-        {moments.length ? (
-          <div className="grid gap-4 md:grid-cols-3">
-            {moments.slice(0, 3).map((article) => (
-              <ArticleCard article={article} key={article.slug} />
-            ))}
-          </div>
-        ) : (
-          <div className="radio-panel rounded-lg p-6 text-sm font-semibold text-slate-600">
-            Aun no hay rankings semanales cargados.
-          </div>
-        )}
+      <section className="home-content-row">
+        <div>
+          <SectionHeading eyebrow="Exitos 90,2000" href="/exitos" title="Exitos 90,2000" />
+          {newArticles.length ? (
+            <div className="overflow-hidden rounded-xl border border-slate-900/10 bg-white/78 shadow-[0_18px_56px_rgba(15,23,42,0.07)]">
+              {newArticles.slice(0, 4).map((article, index) => (
+                <Link className="group grid gap-3 border-b border-slate-900/10 p-4 transition last:border-b-0 hover:bg-fuchsia-50/70 sm:grid-cols-[56px_minmax(0,1fr)_auto] sm:items-center" href={`/exitos/${article.slug}`} key={article.slug}>
+                  <span className="grid h-12 w-12 place-items-center rounded-lg bg-slate-950 text-amber-300">
+                    <Music2 className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-fuchsia-700">Especial {index + 1}</span>
+                    <strong className="block truncate text-base font-black text-slate-950">{article.title}</strong>
+                    <span className="mt-1 line-clamp-1 block text-sm font-semibold text-slate-500">{article.excerpt}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-xs font-black text-slate-500 transition group-hover:text-fuchsia-700">
+                    Abrir <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="radio-panel rounded-lg p-6 text-sm font-semibold text-slate-600">
+              Aun no hay publicaciones en Exitos 90,2000.
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );

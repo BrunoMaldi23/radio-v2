@@ -1,6 +1,6 @@
 import type { Article, Program } from '@/lib/api';
 
-export const fallbackImage = '/logo-radio.png';
+export const fallbackImage = '/logo-home.jpeg';
 
 function safeMediaUrl(value?: string | null) {
   if (!value) {

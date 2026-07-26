@@ -48,7 +48,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         if (!mountedRef.current) return;
         setUser(data.user);
         setToken(data.accessToken);
-        return refreshAll(data.user);
+        return refreshAll(data.user, data.accessToken);
       })
       .catch(() => {
         if (!mountedRef.current) return;
@@ -59,15 +59,15 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       });
   }, []);
 
-  async function refreshAll(currentUser = user) {
+  async function refreshAll(currentUser = user, accessToken = token) {
     if (!currentUser) return;
 
     const [articles, programs, ranking, frequencies, users] = await Promise.all([
-      api.adminArticles(undefined).catch(() => api.articles()),
-      api.adminPrograms(undefined).catch(() => [] as Program[]),
-      api.adminRanking(undefined).catch(() => api.ranking()).catch(() => [] as RankingTrack[]),
-      api.adminFrequencies(undefined).catch(() => [] as Frequency[]),
-      currentUser.role === 'ADMIN' ? api.users(undefined).catch(() => [] as User[]) : Promise.resolve([] as User[])
+      api.adminArticles(accessToken).catch(() => api.articles()),
+      api.adminPrograms(accessToken).catch(() => [] as Program[]),
+      api.adminRanking(accessToken).catch(() => api.ranking()).catch(() => [] as RankingTrack[]),
+      api.adminFrequencies(accessToken).catch(() => [] as Frequency[]),
+      currentUser.role === 'ADMIN' ? api.users(accessToken).catch(() => [] as User[]) : Promise.resolve([] as User[])
     ]);
 
     if (!mountedRef.current) return;
@@ -82,13 +82,13 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshContent = useCallback(async () => {
     await refreshAll();
-  }, [user]);
+  }, [user, token]);
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await api.login(email, password);
     setToken(response.accessToken);
     setUser(response.user);
-    await refreshAll(response.user);
+    await refreshAll(response.user, response.accessToken);
   }, []);
 
   const logout = useCallback(async () => {

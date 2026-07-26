@@ -1,6 +1,26 @@
 logLevel: info
 
 authInternalUsers:
+  - user: any
+    pass:
+    ips: ['127.0.0.1', '::1', '172.16.0.0/12']
+    permissions:
+      - action: read
+        path: tv
+      - action: playback
+        path: tv
+      - action: read
+        path: radio-visual
+      - action: playback
+        path: radio-visual
+  - user: publisher
+    pass: "${MEDIAMTX_PUBLISH_PASSWORD}"
+    ips: ['127.0.0.1', '::1', '172.16.0.0/12']
+    permissions:
+      - action: publish
+        path: tv
+      - action: publish
+        path: radio-visual
   - user: radio_admin
     pass: "${MEDIAMTX_API_PASSWORD}"
     ips: ['127.0.0.1', '::1', '172.16.0.0/12']

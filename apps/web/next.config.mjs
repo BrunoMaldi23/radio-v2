@@ -5,6 +5,7 @@ const hlsProxyUrl = process.env.HLS_PROXY_URL ?? 'http://localhost:8888';
 
 const nextConfig = {
   devIndicators: false,
+  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   async rewrites() {
     return [
       {
@@ -21,7 +22,7 @@ const nextConfig = {
       },
       {
         source: '/hls/:path*',
-        destination: `${hlsProxyUrl}/hls/:path*`
+        destination: `${hlsProxyUrl}/:path*`
       }
     ];
   }

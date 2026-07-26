@@ -28,6 +28,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { BookingCalendar } from '@/components/booking-calendar';
 import { Button } from '@/components/ui/button';
 import { api, AuditLog, Booking, BookingStatus, Resource, ResourceType, Role, Space, User, UserPayload } from '@/lib/api';
+import { confirmToast } from '@/lib/confirm-toast';
 
 const roleLabels: Record<Role, string> = {
   ADMIN: 'Administrador',
@@ -335,27 +336,32 @@ export function Dashboard() {
       complete: 'Confirma que deseas completar esta reserva.',
       noShow: 'Confirma que el usuario no se presento. Esto aplicara penalizacion.'
     };
-    if (!window.confirm(confirmMessages[action])) return;
-
-    setIsLoading(true);
-    setMessage('');
-    try {
-      const result =
-        action === 'activate'
-          ? await api.activateBooking(bt, id)
-          : action === 'cancel'
-            ? await api.cancelBooking(bt, id)
-            : action === 'complete'
-              ? await api.completeBooking(bt, id)
-              : await api.markNoShow(bt, id);
-      upsertBooking(result);
-      setMessage('Reserva actualizada.');
-      await loadData();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'No se pudo actualizar la reserva.');
-    } finally {
-      setIsLoading(false);
-    }
+    confirmToast({
+      title: 'Confirmar accion',
+      description: confirmMessages[action],
+      confirmLabel: 'Confirmar',
+      onConfirm: async () => {
+        setIsLoading(true);
+        setMessage('');
+        try {
+          const result =
+            action === 'activate'
+              ? await api.activateBooking(bt, id)
+              : action === 'cancel'
+                ? await api.cancelBooking(bt, id)
+                : action === 'complete'
+                  ? await api.completeBooking(bt, id)
+                  : await api.markNoShow(bt, id);
+          upsertBooking(result);
+          setMessage('Reserva actualizada.');
+          await loadData();
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : 'No se pudo actualizar la reserva.');
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
   }
 
   async function saveSpace(event: FormEvent) {
@@ -428,18 +434,24 @@ export function Dashboard() {
   async function clearPenalty(id: number) {
     const bt5 = bearerToken();
     if (!bt5 || !isAdmin) return;
-    if (!window.confirm('Confirma que deseas quitar la penalizacion de este usuario.')) return;
-    setIsLoading(true);
-    try {
-      const saved = await api.clearPenalty(bt5, id);
-      setUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
-      setMessage('Penalizacion retirada.');
-      await loadData();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'No se pudo quitar la penalizacion.');
-    } finally {
-      setIsLoading(false);
-    }
+    confirmToast({
+      title: 'Quitar penalizacion',
+      description: 'Confirma que deseas quitar la penalizacion de este usuario.',
+      confirmLabel: 'Quitar',
+      onConfirm: async () => {
+        setIsLoading(true);
+        try {
+          const saved = await api.clearPenalty(bt5, id);
+          setUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
+          setMessage('Penalizacion retirada.');
+          await loadData();
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : 'No se pudo quitar la penalizacion.');
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
   }
 
   if (!user) {

@@ -199,12 +199,29 @@ model Article {
   body        String
   category    String
   coverUrl    String?
+  eventId     Int?
+  event       Article?      @relation("EventGallery", fields: [eventId], references: [id], onDelete: SetNull)
+  gallery     Article[]     @relation("EventGallery")
+  comments    ArticleComment[]
   likes       Int           @default(0)
   attendees   Int           @default(0)
   status      ContentStatus @default(DRAFT)
   publishedAt DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@index([eventId])
+}
+
+model ArticleComment {
+  id        Int      @id @default(autoincrement())
+  articleId Int
+  body      String
+  author    String?
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([articleId])
 }
 
 model Program {

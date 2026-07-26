@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path .next) { Remove-Item -LiteralPath .next -Recurse -Force }; next dev --turbo -p 3000\"",
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path .next-dev) { Remove-Item -LiteralPath .next-dev -Recurse -Force }; next dev -p 3000\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

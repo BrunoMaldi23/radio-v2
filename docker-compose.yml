@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: radio_labranza
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -31,10 +31,10 @@ services:
     container_name: radio_labranza_local_mediamtx
     restart: unless-stopped
     environment:
-      MTX_AUTH_INTERNAL_USERS: '[{"user":"radio_admin","pass":"${MEDIAMTX_API_PASSWORD}","ips":["127.0.0.1","::1","172.16.0.0/12"],"permissions":[{"action":"api"},{"action":"metrics"}]}]'
+      MTX_AUTH_INTERNAL_USERS: '[{"user":"any","pass":"","ips":["127.0.0.1","::1","172.16.0.0/12"],"permissions":[{"action":"read","path":"tv"},{"action":"playback","path":"tv"},{"action":"read","path":"radio-visual"},{"action":"playback","path":"radio-visual"}]},{"user":"publisher","pass":"${MEDIAMTX_PUBLISH_PASSWORD}","ips":["127.0.0.1","::1","172.16.0.0/12"],"permissions":[{"action":"publish","path":"tv"},{"action":"publish","path":"radio-visual"}]},{"user":"radio_admin","pass":"${MEDIAMTX_API_PASSWORD}","ips":["127.0.0.1","::1","172.16.0.0/12"],"permissions":[{"action":"api"},{"action":"metrics"}]}]'
     ports:
-      - "1935:1935"
-      - "8888:8888"
+      - "127.0.0.1:1935:1935"
+      - "127.0.0.1:8888:8888"
     volumes:
       - ./infra/mediamtx/mediamtx.yml:/mediamtx.yml:ro
 

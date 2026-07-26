@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { ContentStatus } from '@prisma/client';
 
 export class CreateArticleDto {
@@ -20,6 +20,10 @@ export class CreateArticleDto {
   @IsString()
   @IsOptional()
   coverUrl?: string | null;
+
+  @IsInt()
+  @IsOptional()
+  eventId?: number | null;
 
   @IsEnum(ContentStatus)
   @IsOptional()

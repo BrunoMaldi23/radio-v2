@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ExternalLink, Maximize2, Minimize2, PictureInPicture2, RadioTower } from 'lucide-react';
+import { ExternalLink, Maximize2, Minimize2, PictureInPicture2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePlayerStore } from '@/store/player-store';
 
@@ -15,14 +15,13 @@ export function GlobalVideoPlayer() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const isRanking = pathname === '/ranking';
   const isTv = pathname === '/tv';
   const isAdmin = pathname.startsWith('/admin');
 
   useEffect(() => {
     const video = videoRef.current;
 
-    if (!video || videoMode === 'AUDIO_ONLY' || (!isRanking && !isTv)) {
+    if (!video || videoMode === 'AUDIO_ONLY' || !isTv) {
       return;
     }
 
@@ -63,7 +62,7 @@ export function GlobalVideoPlayer() {
 
     void attachHls();
     return () => cleanup();
-  }, [isRanking, isTv, videoMode]);
+  }, [isTv, videoMode]);
 
   useEffect(() => {
     function onFullscreenChange() {
@@ -111,7 +110,7 @@ export function GlobalVideoPlayer() {
     }
   }
 
-  if (videoMode === 'AUDIO_ONLY' || isAdmin || (!isRanking && !isTv)) {
+  if (videoMode === 'AUDIO_ONLY' || isAdmin || !isTv) {
     return null;
   }
 
@@ -120,15 +119,10 @@ export function GlobalVideoPlayer() {
       ref={playerRef}
       className={cn(
         'video-player-shell overflow-hidden border border-white/20 bg-slate-950 text-white transition-all duration-300',
-        isRanking
-          ? 'fixed bottom-28 right-4 z-50 h-[11.25rem] w-80 rounded-lg shadow-2xl'
-          : cn(
-              'flex w-full flex-col rounded-lg shadow-2xl shadow-slate-950/25',
-              isTv ? 'max-w-none' : 'mx-auto mb-8 max-w-5xl'
-            )
+        'flex w-full flex-col rounded-xl shadow-2xl shadow-slate-950/25 max-w-none'
       )}
     >
-      <div className={cn('relative aspect-video w-full bg-slate-950', !isRanking && 'min-h-[220px] sm:min-h-[360px]')}>
+      <div className="relative aspect-video w-full min-h-[240px] bg-slate-950 sm:min-h-[440px]">
         <div className="absolute inset-0 signal-grid opacity-[0.16]" />
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(9,15,28,0.98)_0%,rgba(15,23,42,0.92)_48%,rgba(19,78,74,0.82)_100%)]" />
         <video
@@ -141,25 +135,16 @@ export function GlobalVideoPlayer() {
           onError={() => setIsVideoReady(false)}
           playsInline
         />
-        <div className={cn('absolute inset-0 grid place-items-center transition-opacity duration-300', isVideoReady && 'opacity-0')}>
-          <div className="flex flex-col items-center gap-3 text-center">
-            <span className="grid h-14 w-14 place-items-center rounded-md bg-white/10 ring-1 ring-white/15">
-              <RadioTower className="h-7 w-7 text-teal-300" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-normal text-teal-200">Preparando senal</p>
-              {!isRanking && <h1 className="mt-2 text-3xl font-bold sm:text-5xl">Radio Labranza FM+ TV</h1>}
-              {!isRanking && <p className="mt-2 text-xs text-zinc-300">Conectando con la transmision en vivo.</p>}
-            </div>
-          </div>
+        <div className="pointer-events-none absolute right-3 top-3 z-10">
+          <span className="tv-video-live-badge">Vivo</span>
         </div>
-        <div className="absolute right-3 top-3 rounded-md bg-rose-500 px-2 py-1 text-xs font-bold uppercase tracking-normal shadow-lg shadow-rose-950/30">
-          Vivo
+        <div className={cn('absolute inset-0 transition-opacity duration-300', isVideoReady && 'opacity-0')}>
+          <div className="h-full w-full bg-[linear-gradient(135deg,#070d1d_0%,#071021_50%,#0d3938_100%)]" />
         </div>
-        <div className="absolute bottom-3 right-3 flex items-center gap-2">
+        <div className="absolute bottom-3 right-3 flex items-center gap-2 sm:bottom-5 sm:right-5">
           <button
             aria-label="Abrir TV"
-            className="grid h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/55 text-white backdrop-blur hover:bg-black/75"
+            className="tv-video-action"
             onClick={() => window.open('/tv', '_self')}
             type="button"
           >
@@ -167,7 +152,7 @@ export function GlobalVideoPlayer() {
           </button>
           <button
             aria-label="Picture in Picture"
-            className="hidden h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/55 text-white backdrop-blur hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45 sm:grid"
+            className="tv-video-action hidden disabled:cursor-not-allowed disabled:opacity-45 sm:grid"
             disabled={!isVideoReady}
             onClick={() => void openPictureInPicture()}
             type="button"
@@ -176,7 +161,7 @@ export function GlobalVideoPlayer() {
           </button>
           <button
             aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-            className="grid h-9 w-9 place-items-center rounded-md border border-white/15 bg-black/55 text-white backdrop-blur hover:bg-black/75"
+            className="tv-video-action"
             onClick={() => void toggleFullscreen()}
             type="button"
           >

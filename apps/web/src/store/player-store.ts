@@ -21,14 +21,14 @@ type PlayerState = {
 };
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
-  isPlaying: true,
+  isPlaying: false,
   isLive: true,
   volume: 72,
   videoMode: 'FULLSCREEN',
   currentTrack: {
     title: 'Senal en vivo',
-    artist: 'Radio Labranza FM+ 107.5',
-    coverUrl: '/logo-radio.png'
+    artist: 'Radio Hit 90 y 2000',
+    coverUrl: '/logo-home.jpeg'
   },
   setPlaying: (isPlaying) => set({ isPlaying }),
   setVolume: (volume) => set({ volume }),
