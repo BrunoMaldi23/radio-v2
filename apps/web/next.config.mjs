@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
-const apiProxyUrl = process.env.API_PROXY_URL ?? 'http://localhost:3001';
-const icecastProxyUrl = process.env.ICECAST_PROXY_URL ?? 'http://localhost:8000';
-const hlsProxyUrl = process.env.HLS_PROXY_URL ?? 'http://localhost:8888';
+const isProduction = process.env.NODE_ENV === 'production';
+const apiProxyUrl = process.env.API_PROXY_URL ?? (isProduction ? 'https://159.112.140.93.nip.io' : 'http://localhost:3001');
+const icecastProxyUrl = process.env.ICECAST_PROXY_URL ?? (isProduction ? 'https://159.112.140.93.nip.io' : 'http://localhost:8000');
+const hlsProxyUrl = process.env.HLS_PROXY_URL ?? (isProduction ? 'https://159.112.140.93.nip.io/hls' : 'http://localhost:8888');
 
 const nextConfig = {
   devIndicators: false,
