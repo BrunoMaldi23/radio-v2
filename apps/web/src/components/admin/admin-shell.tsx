@@ -120,6 +120,7 @@ const AdminSidebar = memo(function AdminSidebar({ onNavigate }: { onNavigate?: (
             className="h-14 w-auto object-contain"
             height={80}
             src="/logo-home.jpeg"
+            style={{ height: '3.5rem', width: 'auto' }}
             width={120}
           />
         </span>
@@ -261,7 +262,7 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_10%,rgba(20,184,166,0.16),transparent_50%),radial-gradient(ellipse_at_90%_90%,rgba(245,158,11,0.12),transparent_50%)]" />
           <div className="relative z-10">
             <span className="inline-grid h-40 w-52 place-items-center overflow-hidden rounded-2xl bg-black px-5 shadow-2xl shadow-black/40 ring-1 ring-cyan-300/20">
-              <Image alt="Radio Hit 90 y 2000" className="h-auto w-40 object-contain" height={160} priority src="/logo-home.jpeg" width={230} />
+              <Image alt="Radio Hit 90 y 2000" className="h-auto w-40 object-contain" height={160} priority src="/logo-home.jpeg" style={{ height: 'auto', width: '10rem' }} width={230} />
             </span>
             <p className="mt-8 inline-flex items-center gap-2 rounded-full bg-amber-400/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-amber-300 ring-1 ring-amber-400/20">
               <Sparkles className="h-3.5 w-3.5" />
@@ -298,7 +299,7 @@ function LoginForm({ onLogin }: { onLogin: (email: string, password: string) => 
           <div className="w-full max-w-sm">
             <div className="mb-8 text-center">
               <span className="mx-auto grid h-32 w-40 place-items-center overflow-hidden rounded-2xl bg-black px-5 shadow-2xl shadow-black/40 ring-1 ring-cyan-300/20 lg:hidden">
-                <Image alt="Radio Hit 90 y 2000" className="h-auto w-32 object-contain" height={120} priority src="/logo-home.jpeg" width={180} />
+                <Image alt="Radio Hit 90 y 2000" className="h-auto w-32 object-contain" height={120} priority src="/logo-home.jpeg" style={{ height: 'auto', width: '8rem' }} width={180} />
               </span>
               <p className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-amber-300/10 px-3.5 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-amber-200 ring-1 ring-amber-300/20 lg:mt-0">
                 <Sparkles className="h-3 w-3" />
@@ -406,6 +407,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
               className="h-10 w-auto object-contain"
               height={48}
               src="/logo-home.jpeg"
+              style={{ height: '2.5rem', width: 'auto' }}
               width={112}
             />
           </Link>

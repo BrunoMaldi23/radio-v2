@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { GlobalAudioPlayer } from '@/components/global-audio-player';
@@ -14,12 +14,60 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const isAdmin = pathname.startsWith('/admin');
   const isTv = pathname === '/tv';
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isTv) {
       return;
     }
 
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const root = document.documentElement;
+    const body = document.body;
+    const previousRootOverflow = root.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    let frame = 0;
+
+    const updateTvViewport = () => {
+      const header = document.querySelector<HTMLElement>('.hit-header');
+      const audioPlayer = document.querySelector<HTMLElement>('[data-global-audio-player]');
+      const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
+      const audioTop = audioPlayer?.getBoundingClientRect().top ?? window.innerHeight;
+      const availableHeight = Math.max(240, audioTop - headerBottom);
+
+      root.style.setProperty('--tv-main-height', `${availableHeight}px`);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    };
+    const scheduleUpdate = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(updateTvViewport);
+    };
+
+    root.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+
+    updateTvViewport();
+    scheduleUpdate();
+
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    const header = document.querySelector<HTMLElement>('.hit-header');
+    const audioPlayer = document.querySelector<HTMLElement>('[data-global-audio-player]');
+    if (header) resizeObserver.observe(header);
+    if (audioPlayer) resizeObserver.observe(audioPlayer);
+
+    const timers = [80, 180, 360, 720].map((delay) => window.setTimeout(scheduleUpdate, delay));
+    window.addEventListener('resize', scheduleUpdate);
+    window.visualViewport?.addEventListener('resize', scheduleUpdate);
+    window.visualViewport?.addEventListener('scroll', scheduleUpdate);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      timers.forEach((timer) => window.clearTimeout(timer));
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', scheduleUpdate);
+      window.visualViewport?.removeEventListener('resize', scheduleUpdate);
+      window.visualViewport?.removeEventListener('scroll', scheduleUpdate);
+      root.style.removeProperty('--tv-main-height');
+      root.style.overflow = previousRootOverflow;
+      body.style.overflow = previousBodyOverflow;
+    };
   }, [isTv]);
 
   return (
@@ -44,7 +92,7 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
         )}
         {children}
       </main>
-      {!isAdmin && <SiteFooter />}
+      {!isAdmin && !isTv && <SiteFooter />}
       {!isAdmin && <GlobalAudioPlayer />}
       <Toaster
         closeButton

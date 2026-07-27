@@ -27,6 +27,10 @@ const mounts = [
 
 const publicIcecast = process.env.NEXT_PUBLIC_ICECAST_URL || 'https://radio-labranza-fm.vercel.app/radio';
 const publicHls = process.env.NEXT_PUBLIC_TV_HLS_URL || 'https://radio-labranza-fm.vercel.app/hls/tv/index.m3u8';
+const publicIcecastUrl = new URL(publicIcecast, 'https://radiohit90y2000.netlify.app');
+const publicIcecastBase = publicIcecast.startsWith('/')
+  ? publicIcecast.replace(/\/radio$/, '')
+  : publicIcecast.replace(/\/radio$/, '');
 
 const relays = [
   { region: 'Audio publico', url: publicIcecast, latency: 'directo' },
@@ -51,7 +55,7 @@ const ingestProfiles = [
     title: 'Icecast Audio',
     icon: Radio,
     rows: [
-      ['Host publico', new URL(publicIcecast).hostname],
+      ['Host publico', publicIcecastUrl.hostname],
       ['Puerto interno', '8000'],
       ['Mount', '/radio'],
       ['Usuario', 'source'],
@@ -124,7 +128,7 @@ export default function StreamAdminPage() {
               <div className="grid gap-4 lg:grid-cols-2">
                 <label className="grid gap-2">
                   <span className="text-sm font-semibold text-zinc-700">Host publico</span>
-                  <input className="admin-input" defaultValue={new URL(publicIcecast).hostname} />
+                  <input className="admin-input" defaultValue={publicIcecastUrl.hostname} />
                 </label>
                 <label className="grid gap-2">
                   <span className="text-sm font-semibold text-zinc-700">Puerto</span>
@@ -285,7 +289,7 @@ export default function StreamAdminPage() {
                 <span className="text-sm font-semibold text-zinc-700">Webhook de estado</span>
                 <div className="relative">
                   <Link2 className="absolute left-3 top-3.5 h-4 w-4 text-zinc-400" />
-                  <input className="admin-input pl-9" defaultValue={`${publicIcecast.replace(/\/radio$/, '')}/streaming/runtime-status`} />
+                  <input className="admin-input pl-9" defaultValue={`${publicIcecastBase}/streaming/runtime-status`} />
                 </div>
               </label>
             </div>

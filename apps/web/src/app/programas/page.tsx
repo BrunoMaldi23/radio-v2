@@ -25,7 +25,7 @@ export default function ProgramsPage() {
       {publicPrograms.length ? (
         <div className="grid gap-4 md:grid-cols-3">
           {publicPrograms.map((program) => (
-            <ProgramCard key={program.name} program={program} />
+            <ProgramCard key={program.id ?? program.slug} program={program} />
           ))}
         </div>
       ) : (

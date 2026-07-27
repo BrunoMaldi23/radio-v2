@@ -21,15 +21,21 @@ export function GlobalVideoPlayer() {
   useEffect(() => {
     const video = videoRef.current;
 
-    if (!video || videoMode === 'AUDIO_ONLY' || !isTv) {
+    if (!video || videoMode === 'AUDIO_ONLY' || !isTv || !hlsUrl) {
       return;
     }
 
     let cleanup: () => void = () => undefined;
+    const controller = new AbortController();
     setIsVideoReady(false);
 
     async function attachHls() {
       if (!video) {
+        return;
+      }
+
+      const manifest = await fetch(hlsUrl, { cache: 'no-store', signal: controller.signal }).catch(() => null);
+      if (!manifest?.ok) {
         return;
       }
 
@@ -61,7 +67,10 @@ export function GlobalVideoPlayer() {
     }
 
     void attachHls();
-    return () => cleanup();
+    return () => {
+      controller.abort();
+      cleanup();
+    };
   }, [isTv, videoMode]);
 
   useEffect(() => {

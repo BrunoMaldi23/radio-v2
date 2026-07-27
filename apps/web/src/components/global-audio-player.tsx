@@ -230,7 +230,7 @@ export function GlobalAudioPlayer() {
   const PlayIcon = isBusy ? Loader2 : audioStatus === 'error' ? RotateCcw : isPlaying ? Pause : Play;
 
   return (
-    <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-amber-300/40 bg-slate-950 text-white shadow-2xl shadow-slate-950/50">
+    <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-amber-300/40 bg-slate-950 text-white shadow-2xl shadow-slate-950/50" data-global-audio-player>
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/80 to-transparent" />
       <audio crossOrigin="anonymous" preload="metadata" ref={audioRef} />
       <div className="mx-auto grid min-h-[68px] max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:min-h-[74px] sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-5 lg:px-8">

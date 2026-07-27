@@ -220,14 +220,14 @@ export function TvLiveChat() {
 
   return (
     <aside className="tv-chat-panel grid overflow-hidden">
-      <div className="tv-chat-head flex items-center justify-between gap-3 border-b px-3 py-2.5">
+      <div className="tv-chat-head flex items-center justify-between gap-3 border-b px-3.5 py-2.5">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-950 text-cyan-300">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-slate-950 text-cyan-300">
             <MessageCircle className="h-5 w-5" />
           </span>
           <div className="min-w-0">
-            <h2 className="text-sm font-black leading-tight text-slate-950">Chat en vivo</h2>
-            <p className="mt-0.5 text-[11px] font-black text-rose-500">Radio Labranza FM+</p>
+            <h2 className="text-[15px] font-black leading-tight text-slate-950">Chat en vivo</h2>
+            <p className="mt-0.5 text-xs font-black text-rose-500">Radio Labranza FM+</p>
           </div>
         </div>
         <span className={cn('tv-chat-status', status !== 'live' && 'is-syncing')}>
@@ -235,26 +235,26 @@ export function TvLiveChat() {
         </span>
       </div>
 
-      <div ref={listRef} className="admin-scroll min-h-0 overflow-y-auto px-3 py-2.5">
-        <div className="grid gap-2.5">
+      <div ref={listRef} className="admin-scroll min-h-0 overflow-y-auto px-3.5 py-3">
+        <div className="grid gap-3">
           {visibleMessages.map((message) => (
-            <article className="grid grid-cols-[2rem_minmax(0,1fr)] gap-2" key={message.id}>
-              <span className={cn('grid h-7 w-7 place-items-center rounded-md text-[11px] font-black shadow-sm', toneClasses[message.tone])}>
+            <article className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-2.5" key={message.id}>
+              <span className={cn('grid h-8 w-8 place-items-center rounded-md text-xs font-black shadow-sm', toneClasses[message.tone])}>
                 {getInitials(message.author)}
               </span>
               <div className="min-w-0">
                 <div className="flex min-w-0 items-baseline gap-2">
-                  <p className="truncate text-[12px] font-black text-slate-950">{message.author}</p>
-                  <span className="shrink-0 text-[9px] font-black text-slate-400">{message.time}</span>
+                  <p className="truncate text-[13px] font-black text-slate-950">{message.author}</p>
+                  <span className="shrink-0 text-[10px] font-black text-slate-400">{message.time}</span>
                 </div>
-                <p className="mt-0.5 break-words text-[11px] font-semibold leading-4 text-slate-600">{message.text}</p>
+                <p className="mt-0.5 break-words text-xs font-semibold leading-5 text-slate-600">{message.text}</p>
               </div>
             </article>
           ))}
         </div>
       </div>
 
-      <form className="mt-auto grid gap-2 border-t bg-slate-50/80 p-2.5" onSubmit={handleSubmit}>
+      <form className="mt-auto grid gap-2 border-t bg-slate-50/80 p-3" onSubmit={handleSubmit}>
         {error && <p className="rounded-md bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">{error}</p>}
         <input
           aria-label="Nombre"

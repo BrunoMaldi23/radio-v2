@@ -243,6 +243,7 @@ export function RichTextEditor({
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
     ],
     content: value,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {

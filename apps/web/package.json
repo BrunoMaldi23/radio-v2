@@ -6,7 +6,9 @@
     "dev": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path .next-dev) { Remove-Item -LiteralPath .next-dev -Recurse -Force }; next dev -p 3000\"",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "typecheck": "tsc --noEmit --incremental false",
+    "lint": "npm run typecheck",
+    "check": "npm run typecheck && next build"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",

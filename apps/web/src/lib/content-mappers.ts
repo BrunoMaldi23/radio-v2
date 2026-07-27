@@ -41,6 +41,8 @@ export function mapArticle(article: Article) {
 
 export function mapProgram(program: Program) {
   return {
+    id: program.id,
+    slug: program.slug,
     name: program.name,
     host: program.host,
     schedule: program.schedule,

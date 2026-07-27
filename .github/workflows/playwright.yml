@@ -8,6 +8,36 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: radio_labranza
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d radio_labranza"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/radio_labranza?schema=public
+      JWT_SECRET: ci-jwt-secret
+      JWT_EXPIRES_IN: 8h
+      BOOTSTRAP_TOKEN: ci-bootstrap-token
+      INTERNAL_API_KEY: ci-internal-api-key
+      MEDIAMTX_API_PASSWORD: ci-mediamtx-password
+      ICECAST_SOURCE_PASSWORD: ci-icecast-source
+      ICECAST_ADMIN_PASSWORD: ci-icecast-admin
+      ICECAST_RELAY_PASSWORD: ci-icecast-relay
+      NEXT_PUBLIC_API_URL: /api
+      API_PROXY_URL: http://localhost:3001
+      NEXT_PUBLIC_TV_HLS_URL: /hls/tv/index.m3u8
+      NEXT_PUBLIC_ICECAST_URL: /radio
+      WEB_ORIGIN: http://localhost:3000
+      PORT: 3001
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -15,10 +45,46 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
+    - name: Generate Prisma client
+      run: npm run prisma:generate
+    - name: Apply database migrations
+      run: npx prisma migrate deploy
+    - name: Seed database
+      run: npm run prisma:seed
+    - name: Typecheck web
+      run: npm run lint -w apps/web
+    - name: Typecheck api
+      run: npm run lint -w apps/api
+    - name: Build api
+      run: npm run api:build
+    - name: Build web
+      run: npm run web:build
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install --with-deps chromium
+    - name: Start api
+      run: |
+        npm run start -w apps/api > api.log 2>&1 &
+        for i in {1..30}; do
+          if curl -fsS http://localhost:3001/health >/dev/null; then
+            exit 0
+          fi
+          sleep 2
+        done
+        cat api.log
+        exit 1
+    - name: Start web
+      run: |
+        npm run start -w apps/web -- -p 3000 > web.log 2>&1 &
+        for i in {1..30}; do
+          if curl -fsS http://localhost:3000 >/dev/null; then
+            exit 0
+          fi
+          sleep 2
+        done
+        cat web.log
+        exit 1
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --project=chromium
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
